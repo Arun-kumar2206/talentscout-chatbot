@@ -2,6 +2,7 @@ import streamlit as st
 from utils.parser import parse_tech_stack
 from llm.geminiAPI import call_gemini
 from llm.prompts import generate_questions_prompt
+from utils.parser import is_valid_email, is_valid_phone
 
 EXIT_KEYWORDS = ["exit", "quit", "bye", "done"]
 
@@ -24,11 +25,16 @@ def handle_input(user_input):
         return "Please enter your email address."
     
     elif state == "ask_email":
+        if not is_valid_email(user_input):
+            return "Invalid email format. Please enter a valid email."
         st.session_state.candidate["email"] = user_input
         st.session_state.state = "ask_phone"
         return "Please enter your phone number."
     
     elif state == "ask_phone":
+        if not is_valid_phone(user_input):
+            return "Invalid phone number. Enter 10 digits (with optional +)."
+
         st.session_state.candidate["phone"] = user_input
         st.session_state.state = "ask_experience"
         return "How many years of experience do you have?"
@@ -67,9 +73,26 @@ def handle_input(user_input):
         st.session_state.questions = questions
         st.session_state.state = "end"
 
-        return f"Here are your technical questions:\n\n{questions}\n\n Thank you for applying! We will get back to you soon."
+        summary = f"""
+Candidate Summary
+- Name: {candidate['name']}
+- Role: {candidate['role']}
+- Experience: {candidate['experience']} years
+- Tech Stack: {', '.join(candidate['tech_stack'])}
+
+---
+
+Technical Questions
+{questions}
+
+---
+
+Thank you for applying to TalentScout!
+Our team will review your responses and contact you soon.
+"""
+        return summary
     
     elif state == "end":
         return "Conversation already ended."
 
-    return "Sorry, I didn't understand that. can you please repeat it again."
+    return "I didn't quite understant that. Please respond according to the question or type 'exit' to quit."
