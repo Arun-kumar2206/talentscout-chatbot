@@ -7,7 +7,7 @@ st.set_page_config(page_title="TalentScout Hiring Assistant")
 
 st.markdown(
     """
-    <h1 style='text-align: center; color: #4CAF50;'>
+    <h1 style='text-align: center; color: #E0E0E0;'>
     TalentScout Hiring Assistant
     </h1>
     <p style='text-align: center;'>
@@ -19,6 +19,11 @@ st.markdown(
 st.sidebar.title("Candidate Progress")
 
 initialize_state()
+
+if not st.session_state.messages:
+    # Send initial greeting message
+    response = handle_input("")
+    st.session_state.messages.append({"role": "assistant", "content": response})
 
 candidate = st.session_state.candidate
 

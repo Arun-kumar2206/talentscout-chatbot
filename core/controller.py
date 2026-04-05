@@ -34,11 +34,11 @@ def handle_input(user_input):
     
     elif state == "ask_phone":
         if not is_valid_phone(user_input):
-            return "Invalid phone number. Enter 10 digits (with optional +)."
+            return "Invalid phone number. Enter 10 digits (with optional +(country code))."
 
         st.session_state.candidate["phone"] = user_input
         st.session_state.state = "ask_experience"
-        return "How many years of experience do you have?"
+        return "How many years of experience do you have (Integer only)?"
     
     elif state == "ask_experience":
         st.session_state.candidate["experience"] = user_input
@@ -58,35 +58,31 @@ def handle_input(user_input):
     elif state == "ask_tech_stack":
         tech_list = parse_tech_stack(user_input)
         st.session_state.candidate["tech_stack"] = tech_list
-        st.session_state.state = "generate_questions"
-        return f"Got it! Tech stack identified: {', '.join(tech_list)}.\n\nGenerating questions..."
-    
-    elif state == "generate_questions":
+        
+        # Generate questions
         candidate = st.session_state.candidate
-
         prompt = generate_questions_prompt(
             candidate["experience"],
-            candidate["tech_stack"]
+            tech_list
         )
-
         questions_text = ""
         for chunk in call_gemini_stream(prompt):
             questions_text += chunk
         questions_text = questions_text.strip()
-
+        
         # Parse questions using regex
         questions_list = re.findall(r'\d+\.\s*(.+)', questions_text)
         questions_list = [q.strip() for q in questions_list]
-
+        
         st.session_state.questions = questions_list
         st.session_state.state = "ask_question"
         st.session_state.current_question = 0
-
-        # Return the first question
+        
+        # Return the response with first question
         if questions_list:
-            return questions_list[0]
+            return f"Got it! Tech stack identified: {', '.join(tech_list)}.\n\n{questions_list[0]}"
         else:
-            return "Error: No questions generated. Response: " + questions_text
+            return f"Got it! Tech stack identified: {', '.join(tech_list)}.\n\nError: No questions generated. Response: {questions_text}"
     
     elif state == "ask_question":
         st.session_state.answers.append(user_input)
