@@ -11,6 +11,10 @@ Key capabilities include:
 - **Real-time Chat Interface**: Provides a user-friendly chat experience with session persistence.
 - **Progress Tracking**: Displays candidate information in a sidebar for easy monitoring.
 
+## Live Demo
+
+Try the live demo at [https://talentscout-chatbot-22.streamlit.app/](https://talentscout-chatbot-22.streamlit.app/)
+
 ## Installation Instructions
 
 Follow these steps to set up and run the application locally:
