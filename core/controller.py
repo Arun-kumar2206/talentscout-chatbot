@@ -1,8 +1,9 @@
 import streamlit as st
 from utils.parser import parse_tech_stack
-from llm.geminiAPI import call_gemini
+from llm.geminiAPI import call_gemini_stream
 from llm.prompts import generate_questions_prompt
 from utils.parser import is_valid_email, is_valid_phone
+import re
 
 EXIT_KEYWORDS = ["exit", "quit", "bye", "done"]
 
@@ -68,29 +69,34 @@ def handle_input(user_input):
             candidate["tech_stack"]
         )
 
-        questions = call_gemini(prompt)
+        questions_text = ""
+        for chunk in call_gemini_stream(prompt):
+            questions_text += chunk
+        questions_text = questions_text.strip()
 
-        st.session_state.questions = questions
-        st.session_state.state = "end"
+        # Parse questions using regex
+        questions_list = re.findall(r'\d+\.\s*(.+)', questions_text)
+        questions_list = [q.strip() for q in questions_list]
 
-        summary = f"""
-Candidate Summary
-- Name: {candidate['name']}
-- Role: {candidate['role']}
-- Experience: {candidate['experience']} years
-- Tech Stack: {', '.join(candidate['tech_stack'])}
+        st.session_state.questions = questions_list
+        st.session_state.state = "ask_question"
+        st.session_state.current_question = 0
 
----
+        # Return the first question
+        if questions_list:
+            return questions_list[0]
+        else:
+            return "Error: No questions generated. Response: " + questions_text
+    
+    elif state == "ask_question":
+        st.session_state.answers.append(user_input)
+        st.session_state.current_question += 1
 
-Technical Questions
-{questions}
-
----
-
-Thank you for applying to TalentScout!
-Our team will review your responses and contact you soon.
-"""
-        return summary
+        if st.session_state.current_question < len(st.session_state.questions):
+            return st.session_state.questions[st.session_state.current_question]
+        else:
+            st.session_state.state = "end"
+            return "Thank you for applying to TalentScout! Our team will review your responses and contact you soon."
     
     elif state == "end":
         return "Conversation already ended."

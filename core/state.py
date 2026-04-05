@@ -20,3 +20,9 @@ def initialize_state():
 
     if "questions" not in st.session_state:
         st.session_state.questions = []
+
+    if "answers" not in st.session_state:
+        st.session_state.answers = []
+
+    if "current_question" not in st.session_state:
+        st.session_state.current_question = 0
