@@ -59,7 +59,6 @@ def handle_input(user_input):
         tech_list = parse_tech_stack(user_input)
         st.session_state.candidate["tech_stack"] = tech_list
         
-        # Generate questions
         candidate = st.session_state.candidate
         prompt = generate_questions_prompt(
             candidate["experience"],
@@ -70,7 +69,6 @@ def handle_input(user_input):
             questions_text += chunk
         questions_text = questions_text.strip()
         
-        # Parse questions using regex
         questions_list = re.findall(r'\d+\.\s*(.+)', questions_text)
         questions_list = [q.strip() for q in questions_list]
         
@@ -78,7 +76,6 @@ def handle_input(user_input):
         st.session_state.state = "ask_question"
         st.session_state.current_question = 0
         
-        # Return the response with first question
         if questions_list:
             return f"Got it! Tech stack identified: {', '.join(tech_list)}.\n\n{questions_list[0]}"
         else:

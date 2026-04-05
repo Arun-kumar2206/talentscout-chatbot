@@ -21,7 +21,6 @@ st.sidebar.title("Candidate Progress")
 initialize_state()
 
 if not st.session_state.messages:
-    # Send initial greeting message
     response = handle_input("")
     st.session_state.messages.append({"role": "assistant", "content": response})
 
